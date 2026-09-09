@@ -1,0 +1,219 @@
+{
+  "bankData10x10.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 14,
+      "2": 512,
+      "3": 766,
+      "4": 1012,
+      "5": 200
+    },
+    "count": 2504
+  },
+  "bankData12x12.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 0,
+      "2": 200,
+      "3": 200,
+      "4": 200,
+      "5": 200
+    },
+    "count": 800
+  },
+  "bankData4x4.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 10,
+      "2": 8,
+      "3": 8,
+      "4": 7,
+      "5": 3
+    },
+    "count": 36
+  },
+  "bankData5x5.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 10,
+      "2": 9,
+      "3": 10,
+      "4": 10,
+      "5": 10
+    },
+    "count": 49
+  },
+  "bankData6x6.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 199,
+      "2": 196,
+      "3": 193,
+      "4": 167,
+      "5": 158
+    },
+    "count": 913
+  },
+  "bankData7x7.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 200,
+      "2": 393,
+      "3": 555,
+      "4": 557,
+      "5": 224
+    },
+    "count": 1929
+  },
+  "bankData8x8.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 200,
+      "2": 321,
+      "3": 494,
+      "4": 1006,
+      "5": 419
+    },
+    "count": 2440
+  },
+  "bankData9x9.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "1": 186,
+      "2": 369,
+      "3": 592,
+      "4": 1123,
+      "5": 281
+    },
+    "count": 2551
+  },
+  "bankDataGC10x10.json": {
+    "type": "list_in_dict",
+    "count": 1163
+  },
+  "bankDataGC11x11.json": {
+    "type": "list_in_dict",
+    "count": 1500
+  },
+  "bankDataGC12x12.json": {
+    "type": "list_in_dict",
+    "count": 902
+  },
+  "bankDataGC6x6.json": {
+    "type": "list_in_dict",
+    "count": 121
+  },
+  "bankDataGC8x8.json": {
+    "type": "list_in_dict",
+    "count": 878
+  },
+  "bankDataGC9x9.json": {
+    "type": "list_in_dict",
+    "count": 761
+  },
+  "bankDataGCSample6x6.json": {
+    "type": "list_in_dict",
+    "count": 23
+  },
+  "bankDataGCSample7x7.json": {
+    "type": "list_in_dict",
+    "count": 11
+  },
+  "bankDataLK.json": {
+    "type": "list",
+    "count": 169
+  },
+  "bankDataLKModified.json": {
+    "type": "list_in_dict",
+    "count": 169
+  },
+  "bankDataLKStyle10x10.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "5": 597,
+      "4": 809,
+      "3": 500,
+      "2": 500
+    },
+    "count": 2406
+  },
+  "bankDataLKStyle11x11.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "4": 20,
+      "5": 20,
+      "3": 10,
+      "2": 10,
+      "1": 10
+    },
+    "count": 70
+  },
+  "bankDataLKStyle12x12.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "2": 4,
+      "3": 5,
+      "4": 700,
+      "5": 17
+    },
+    "count": 726
+  },
+  "bankDataLKStyle7x7.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "5": 10,
+      "4": 493,
+      "3": 488,
+      "2": 481
+    },
+    "count": 1472
+  },
+  "bankDataLKStyle8x8.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "5": 500,
+      "4": 868,
+      "3": 500,
+      "2": 500
+    },
+    "count": 2368
+  },
+  "bankDataLKStyle9x9.json": {
+    "type": "tiers_dict",
+    "tiers": {
+      "5": 500,
+      "4": 1002,
+      "3": 500,
+      "2": 500
+    },
+    "count": 2502
+  },
+  "bankDataOneFish10x10.json": {
+    "type": "list_in_dict",
+    "count": 600
+  },
+  "bankDataOneFish7x7.json": {
+    "type": "list_in_dict",
+    "count": 2
+  },
+  "bankDataOneFish8x8.json": {
+    "type": "list_in_dict",
+    "count": 600
+  },
+  "bankDataOneFish9x9.json": {
+    "type": "list_in_dict",
+    "count": 600
+  },
+  "bankDataSP.json": {
+    "type": "list_in_dict",
+    "count": 57
+  },
+  "bankDataSP_TT.json": {
+    "type": "list_in_dict",
+    "count": 432
+  },
+  "levels-7x7.json": {
+    "type": "list",
+    "count": 37
+  }
+}

@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+:root {
+  --bg-main: #FAF7F2;
+  --text-dark: #3D2C1E;
+  --text-muted: #8C7A6B;
+  --cat-orange: #F29454;
+  --fish-blue: #38BDF8;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  font-family: 'Baloo 2', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Ensure Next.js dev portal never blocks bottom game controls on touch devices */
+nextjs-portal {
+  display: none !important;
+}
+
+/* Safe area padding classes */
+.tma-safe-top {
+  padding-top: max(
+    env(safe-area-inset-top, 0px),
+    var(--tg-content-safe-area-inset-top, 0px),
+    var(--tg-safe-area-inset-top, 0px),
+    78px
+  );
+}
+
+.tma-safe-bottom {
+  padding-bottom: max(
+    env(safe-area-inset-bottom, 0px),
+    var(--tg-content-safe-area-inset-bottom, 0px),
+    var(--tg-safe-area-inset-bottom, 0px),
+    16px
+  );
+}
+
+/* Animations */
+@keyframes heartBreak {
+  0% {
+    transform: scale(0.3) translateY(0);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.3) translateY(-15px);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.1) translateY(-25px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9) translateY(-45px);
+    opacity: 0;
+  }
+}
+
+.animate-heart-break {
+  animation: heartBreak 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.animate-error-shake {
+  animation: errorShake 0.4s ease-in-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  75% { transform: scale(1.18); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in {
+  animation: popIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes crossAppear {
+  0% { transform: scale(0.4) rotate(-15deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.animate-cross-appear {
+  animation: crossAppear 0.18s ease-out;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(61, 44, 30, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(61, 44, 30, 0.25);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Range Slider Styling */
+.music-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #F29454;
+  cursor: pointer;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+.music-volume-slider::-webkit-slider-thumb:active {
+  transform: scale(1.18);
+}
+.music-volume-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #F29454;
+  cursor: pointer;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.2);
+}
+
