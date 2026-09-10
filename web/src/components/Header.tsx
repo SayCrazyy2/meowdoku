@@ -115,13 +115,12 @@ export const Header: React.FC<HeaderProps> = ({
             return (
               <img
                 key={index}
-                src="/fish.png"
+                src="/fish-1.png"
                 alt="Fish"
-                className={`w-6 h-6 object-contain transition-all duration-300 ${
-                  isAlive
+                className={`w-6 h-6 object-contain transition-all duration-300 ${isAlive
                     ? 'scale-100 opacity-100 filter drop-shadow-xs'
                     : 'scale-90 opacity-25 grayscale'
-                }`}
+                  }`}
                 draggable={false}
               />
             );

@@ -6,9 +6,10 @@ import { useI18n } from '@/lib/i18n';
 
 interface LoadingScreenProps {
   message?: string;
+  progress?: number;
 }
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ message }) => {
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ message, progress }) => {
   const { t } = useI18n();
 
   return (
@@ -58,22 +59,32 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ message }) => {
         {t('appTagline')}
       </p>
 
-      {/* Animated Loading Bar */}
+      {/* Loading Bar */}
       <div className="w-56 h-3 bg-[#E8DFD3] rounded-full overflow-hidden p-0.5 border border-[#D9CEBF]">
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: '100%' }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="w-1/2 h-full bg-[#F29454] rounded-full shadow-sm"
-        />
+        {progress !== undefined ? (
+          <motion.div
+            initial={{ width: '8%' }}
+            animate={{ width: `${Math.min(100, Math.max(8, progress))}%` }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="h-full bg-gradient-to-r from-[#F29454] to-[#E27632] rounded-full shadow-sm"
+          />
+        ) : (
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: '100%' }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="w-1/2 h-full bg-[#F29454] rounded-full shadow-sm"
+          />
+        )}
       </div>
 
-      <p className="mt-4 text-xs font-bold text-[#8C7A6B] tracking-wider uppercase">
-        {message || t('loading')}
+      <p className="mt-4 text-xs font-bold text-[#8C7A6B] tracking-wider uppercase flex items-center gap-1.5">
+        <span>{message || t('loading')}</span>
+        {progress !== undefined && <span className="text-[#F29454]">({progress}%)</span>}
       </p>
     </div>
   );

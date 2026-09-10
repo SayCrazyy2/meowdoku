@@ -180,11 +180,10 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
               data?.leaderboard.map(item => (
                 <div
                   key={item.telegram_id}
-                  className={`flex items-center justify-between py-3 px-4 rounded-2xl border transition-all ${
-                    item.is_current_user
+                  className={`flex items-center justify-between py-3 px-4 rounded-2xl border transition-all ${item.is_current_user
                       ? 'bg-[#FEF3C7] border-[#FDE68A] shadow-sm'
                       : 'bg-white/90 border-[#EBE3D7] shadow-xs hover:bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-7 flex items-center justify-center shrink-0">
@@ -208,7 +207,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
                   <div className="flex items-center gap-1 text-sm font-black text-[#0284C7] shrink-0">
                     <img
-                      src="/fish.png"
+                      src="/fish-1.png"
                       alt="Fish"
                       className="w-5 h-5 object-contain -translate-y-0.5 -rotate-6"
                       draggable={false}
@@ -241,7 +240,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 
               <div className="flex items-center gap-1.5 text-base sm:text-lg font-black text-[#0284C7] shrink-0">
                 <img
-                  src="/fish.png"
+                  src="/fish-1.png"
                   alt="Fish"
                   className="w-6 h-6 object-contain -translate-y-0.5 -rotate-6"
                   draggable={false}

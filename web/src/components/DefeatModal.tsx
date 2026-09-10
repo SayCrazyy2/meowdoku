@@ -62,9 +62,9 @@ export const DefeatModal: React.FC<DefeatModalProps> = ({
 
             {/* Fish indicator showing 0 fish left */}
             <div className="flex items-center justify-center gap-3 mb-6 bg-white/80 py-2.5 px-4 rounded-2xl border border-[#EBE3D7] w-fit mx-auto">
-              <img src="/fish.png" alt="Fish" className="w-7 h-7 object-contain opacity-30 grayscale" draggable={false} />
-              <img src="/fish.png" alt="Fish" className="w-7 h-7 object-contain opacity-30 grayscale" draggable={false} />
-              <img src="/fish.png" alt="Fish" className="w-7 h-7 object-contain opacity-30 grayscale" draggable={false} />
+              <img src="/fish-1.png" alt="Fish" className="w-7 h-7 object-contain opacity-30 grayscale" draggable={false} />
+              <img src="/fish-1.png" alt="Fish" className="w-7 h-7 object-contain opacity-30 grayscale" draggable={false} />
+              <img src="/fish-1.png" alt="Fish" className="w-7 h-7 object-contain opacity-30 grayscale" draggable={false} />
             </div>
 
             {/* Try Again Button */}

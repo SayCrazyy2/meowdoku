@@ -544,7 +544,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#FAF3EB] border border-[#EDE0D4] flex items-center justify-center mt-1">
                           <img
-                            src={`/avatars/${id}.svg`}
+                            src={`/avatars/${id}.jpg`}
                             alt={t('avatarNumber', { id })}
                             className="w-full h-full object-cover"
                             draggable={false}

@@ -66,10 +66,95 @@ export function formatRichText(
   });
 }
 
+export function matchSupportedLanguage(code?: string | null): Language {
+  if (!code) return 'en';
+  const clean = code.toLowerCase().trim();
+
+  // 1. Direct exact match (e.g. 'en', 'hi', 'ja', 'es', 'fr', 'de', 'ru', 'zh')
+  if (AVAILABLE_LANGUAGES.some((l) => l.code === clean)) {
+    return clean;
+  }
+
+  // 2. Prefix match (e.g. 'en-US' -> 'en', 'es-419' -> 'es', 'ru-RU' -> 'ru', 'de-DE' -> 'de')
+  const prefix = clean.split(/[-_]/)[0];
+  if (AVAILABLE_LANGUAGES.some((l) => l.code === prefix)) {
+    return prefix;
+  }
+
+  // 3. Chinese regional variants (zh-hans, zh-hant, zh-cn, zh-tw, etc.)
+  if (clean.startsWith('zh')) {
+    return 'zh';
+  }
+
+  // 4. Unsupported languages (e.g. 'id' for Indonesian Bahasa, 'pt', 'tr', etc.) -> fallback to 'en'
+  return 'en';
+}
+
+export function detectTelegramLanguage(customInitData?: string): string | null {
+  if (typeof window === 'undefined') return null;
+
+  // 1. Check passed customInitData string
+  if (customInitData) {
+    try {
+      const params = new URLSearchParams(customInitData);
+      const userStr = params.get('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj?.language_code) {
+          return userObj.language_code;
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Check window.Telegram.WebApp.initDataUnsafe.user.language_code
+  try {
+    const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
+    if (tgUser?.language_code) {
+      return tgUser.language_code;
+    }
+  } catch {}
+
+  // 3. Check window.Telegram.WebApp.initData
+  try {
+    const initData = (window as any).Telegram?.WebApp?.initData;
+    if (initData) {
+      const params = new URLSearchParams(initData);
+      const userStr = params.get('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj?.language_code) {
+          return userObj.language_code;
+        }
+      }
+    }
+  } catch {}
+
+  // 4. Check URL hash or search (e.g. #tgWebAppData=...)
+  try {
+    const raw = window.location.hash || window.location.search;
+    if (raw) {
+      const hashParams = new URLSearchParams(raw.replace(/^[#?]/, ''));
+      const tgWebAppData = hashParams.get('tgWebAppData') || raw;
+      const params = new URLSearchParams(tgWebAppData.replace(/^[#?]/, ''));
+      const userStr = params.get('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj?.language_code) {
+          return userObj.language_code;
+        }
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
 interface I18nContextType {
   language: Language;
   languages: LanguageMeta[];
   setLanguage: (lang: Language) => void;
+  initLanguageFromTelegram: (initData?: string) => void;
   t: (key: string, params?: TranslationParams) => string;
   tRich: (
     key: string,
@@ -82,6 +167,7 @@ const I18nContext = createContext<I18nContextType>({
   language: 'en',
   languages: AVAILABLE_LANGUAGES,
   setLanguage: () => {},
+  initLanguageFromTelegram: () => {},
   t: (key: string) => key,
   tRich: (key: string) => key,
 });
@@ -93,12 +179,29 @@ export const I18nProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const saved = localStorage.getItem('meowdoku_lang');
     if (saved && AVAILABLE_LANGUAGES.some((l) => l.code === saved)) {
       setLanguageState(saved);
+      return;
     }
+
+    // First visit: auto-detect from Telegram user.language_code or fallback to 'en'
+    const tgLang = detectTelegramLanguage();
+    const matched = matchSupportedLanguage(tgLang);
+    setLanguageState(matched);
+    localStorage.setItem('meowdoku_lang', matched);
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('meowdoku_lang', lang);
+  };
+
+  const initLanguageFromTelegram = (initData?: string) => {
+    const saved = localStorage.getItem('meowdoku_lang');
+    if (!saved) {
+      const tgLang = detectTelegramLanguage(initData);
+      const matched = matchSupportedLanguage(tgLang);
+      setLanguageState(matched);
+      localStorage.setItem('meowdoku_lang', matched);
+    }
   };
 
   const t = (key: string, params?: TranslationParams): string => {
@@ -129,6 +232,7 @@ export const I18nProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         language,
         languages: AVAILABLE_LANGUAGES,
         setLanguage,
+        initLanguageFromTelegram,
         t,
         tRich,
       }}
@@ -139,3 +243,4 @@ export const I18nProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 };
 
 export const useI18n = () => useContext(I18nContext);
+

@@ -22,6 +22,7 @@ import {
 } from '../lib/soundEffects';
 import { triggerHaptic } from '../lib/haptics';
 import { useI18n } from '../lib/i18n';
+import { preloadAllGameAssets } from '../lib/assetPreloader';
 import { Header } from '../components/Header';
 import { GameBoard } from '../components/GameBoard';
 import { ToolBar } from '../components/ToolBar';
@@ -40,10 +41,11 @@ import { ShopModal } from '../components/ShopModal';
 type ScreenType = 'loading' | 'home' | 'game' | 'not_in_telegram';
 
 export default function App() {
-  const { t } = useI18n();
+  const { t, initLanguageFromTelegram } = useI18n();
 
   // Navigation & Screen States
   const [screen, setScreen] = useState<ScreenType>('loading');
+  const [preloadProgress, setPreloadProgress] = useState<number | undefined>(undefined);
   const [initData, setInitData] = useState<string>('');
   const [user, setUser] = useState<UserProfile | null>(null);
 
@@ -248,6 +250,9 @@ export default function App() {
           sessionStorage.removeItem('meowdoku_auto_refreshed');
           setInitData(rawInitData);
 
+          // Auto-detect and initialize user language from Telegram initData
+          initLanguageFromTelegram(rawInitData);
+
           // Call /api/user/auth with Telegram Bearer token
           fetch('/api/user/auth', {
             method: 'POST',
@@ -286,11 +291,14 @@ export default function App() {
 
                 startBGM();
 
-                // Preload 5 levels in background during initial loading
+                // Preload all game assets (avatars, frames, audios, lotties, images) + levels
                 try {
-                  await preloadLevels(userLevel, 5);
+                  await Promise.all([
+                    preloadAllGameAssets((pct) => setPreloadProgress(pct)),
+                    preloadLevels(userLevel, 5),
+                  ]);
                 } catch (err) {
-                  console.warn('Level preloading error:', err);
+                  console.warn('Preloading error:', err);
                 }
 
                 setScreen('home');
@@ -344,6 +352,7 @@ export default function App() {
             const fallbackLvl = 5;
             setCurrentLevelNumber(fallbackLvl);
             preloadLevels(fallbackLvl, 5).catch(console.warn);
+            preloadAllGameAssets().catch(console.warn);
             setScreen('home');
             return;
           }
@@ -768,7 +777,7 @@ export default function App() {
 
   // Render: Loading Screen
   if (screen === 'loading') {
-    return <LoadingScreen message={t('loading')} />;
+    return <LoadingScreen message={t('loading')} progress={preloadProgress} />;
   }
 
   // Count placed cats

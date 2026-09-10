@@ -234,7 +234,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         }`}
                       >
                         <img
-                          src={`/avatars/${id}.svg`}
+                          src={`/avatars/${id}.jpg`}
                           alt={`Avatar ${id}`}
                           className={`w-full h-full object-cover select-none pointer-events-none ${
                             !isUnlocked ? 'filter grayscale-[30%] opacity-75' : ''

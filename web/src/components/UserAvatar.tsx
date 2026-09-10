@@ -34,7 +34,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         }`}
       >
         <img
-          src={`/avatars/${validAvatarId}.svg`}
+          src={`/avatars/${validAvatarId}.jpg`}
           alt={`Avatar ${validAvatarId}`}
           className="w-full h-full object-cover select-none pointer-events-none"
           draggable={false}
