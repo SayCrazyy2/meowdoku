@@ -59,6 +59,32 @@ export async function POST(request: Request) {
       display_name = display_name.trim().slice(0, 32);
     }
 
+    // Check if selected avatar and frame are unlocked (1 & 2 are free, 3..9 require purchase)
+    const [unlocks] = await pool.query<RowDataPacket[]>(
+      'SELECT item_type, item_id FROM user_unlocks WHERE telegram_id = ?',
+      [telegramId]
+    );
+    const unlockedAvatars = new Set<number>([1, 2]);
+    const unlockedFrames = new Set<number>([1, 2]);
+    for (const u of unlocks) {
+      if (u.item_type === 'avatar') unlockedAvatars.add(Number(u.item_id));
+      if (u.item_type === 'frame') unlockedFrames.add(Number(u.item_id));
+    }
+
+    if (!unlockedAvatars.has(avatar_id)) {
+      return NextResponse.json(
+        { error: 'Selected avatar is locked. Unlock it in the Shop!' },
+        { status: 403 }
+      );
+    }
+
+    if (!unlockedFrames.has(frame_id)) {
+      return NextResponse.json(
+        { error: 'Selected frame is locked. Unlock it in the Shop!' },
+        { status: 403 }
+      );
+    }
+
     // Update in MySQL
     await pool.query(
       'UPDATE users SET avatar_id = ?, frame_id = ?, display_name = ?, last_active_at = NOW() WHERE telegram_id = ?',

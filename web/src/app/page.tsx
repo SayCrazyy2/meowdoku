@@ -36,7 +36,7 @@ import { DefeatModal } from '../components/DefeatModal';
 import { DailyStreakModal } from '../components/DailyStreakModal';
 import { DailyChallengeVictoryModal } from '../components/DailyChallengeVictoryModal';
 import { ProfileModal } from '../components/ProfileModal';
-import { ShopModal } from '../components/ShopModal';
+import { ShopModal, PurchaseResult } from '../components/ShopModal';
 
 type ScreenType = 'loading' | 'home' | 'game' | 'not_in_telegram';
 
@@ -302,6 +302,7 @@ export default function App() {
                 }
 
                 setScreen('home');
+                startBGM();
               } else {
                 setScreen('not_in_telegram');
               }
@@ -377,12 +378,60 @@ export default function App() {
       });
       const data = await res.json();
       if (data.success && data.user) {
-        setUser(data.user);
+        setUser(prev => {
+          if (!prev) return data.user;
+          return {
+            ...data.user,
+            // Guard against race conditions where local purchase is ahead of bot.js DB commit
+            cat_hints: Math.max(data.user.cat_hints ?? 0, prev.cat_hints ?? 0),
+            cross_hints: Math.max(data.user.cross_hints ?? 0, prev.cross_hints ?? 0),
+            unlocked_avatars: Array.from(
+              new Set([...(data.user.unlocked_avatars || [1, 2]), ...(prev.unlocked_avatars || [])])
+            ),
+            unlocked_frames: Array.from(
+              new Set([...(data.user.unlocked_frames || [1, 2]), ...(prev.unlocked_frames || [])])
+            ),
+          };
+        });
       }
     } catch (err) {
       console.warn('Error refreshing user data:', err);
     }
   }, [initData]);
+
+  // Handle immediate in-game availability after purchase (without needing a refresh)
+  const handlePurchaseSuccess = useCallback((purchase?: PurchaseResult) => {
+    if (purchase) {
+      setUser(prev => {
+        if (!prev) return null;
+        const next = { ...prev };
+        if (purchase.type === 'cat_hints') {
+          next.cat_hints = (next.cat_hints ?? 0) + purchase.quantity;
+        } else if (purchase.type === 'cross_hints') {
+          next.cross_hints = (next.cross_hints ?? 0) + purchase.quantity;
+        } else if (purchase.type === 'avatar') {
+          const aId = Number(purchase.id);
+          const current = new Set(next.unlocked_avatars || [1, 2]);
+          current.add(aId);
+          next.unlocked_avatars = Array.from(current);
+        } else if (purchase.type === 'frame') {
+          const fId = Number(purchase.id);
+          const current = new Set(next.unlocked_frames || [1, 2]);
+          current.add(fId);
+          next.unlocked_frames = Array.from(current);
+        }
+        return next;
+      });
+    }
+
+    // Delay server sync so bot.js has time to commit to MySQL
+    setTimeout(() => {
+      refreshUserData();
+    }, 1500);
+    setTimeout(() => {
+      refreshUserData();
+    }, 3500);
+  }, [refreshUserData]);
 
   // 4. Load Level (Instant when preloaded, no loading screen)
   const startLevel = useCallback(async (lvlNum: number) => {
@@ -885,7 +934,7 @@ export default function App() {
           onClose={() => setIsShopOpen(false)}
           user={user}
           initData={initData}
-          onPurchaseSuccess={refreshUserData}
+          onPurchaseSuccess={handlePurchaseSuccess}
           safeTop={safeTop}
           safeBottom={safeBottom}
           initialTab={shopInitialTab}

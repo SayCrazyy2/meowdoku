@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Lock, Check, ShoppingBag } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { triggerHaptic } from '@/lib/haptics';
-import { playTap, playGameLoad } from '@/lib/soundEffects';
+import { playTap, playGameLoad, startBGM } from '@/lib/soundEffects';
 import { useI18n } from '@/lib/i18n';
 import { SunLottie } from './SunLottie';
 import { TrophyLottie } from './TrophyLottie';
@@ -43,8 +43,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const currentStreak = user.current_streak ?? user.daily_streak ?? 1;
   const isCheckedInToday = Boolean(user.checked_in_today);
 
-  // Check Bot API 8.0+ Home Screen Status
+  // Check Bot API 8.0+ Home Screen Status & Start Background Music
   useEffect(() => {
+    startBGM();
+
     if (typeof window === 'undefined') return;
     const tg = (window as any).Telegram?.WebApp;
     if (!tg) return;

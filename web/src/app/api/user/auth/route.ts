@@ -44,17 +44,17 @@ export async function POST(request: Request) {
     let displayName = firstName;
 
     if (userRows.length === 0) {
-      // New user: assign random avatar (1..9) and random frame (1..9), default display_name to firstName
+      // New user: automatically assign default avatar 1 and frame 1 (1 and 2 are free, others paid)
       isNew = true;
-      avatarId = Math.floor(Math.random() * 9) + 1;
-      frameId = Math.floor(Math.random() * 9) + 1;
+      avatarId = 1;
+      frameId = 1;
       displayName = firstName;
 
       const [insertRes] = await pool.query<ResultSetHeader>(
         `INSERT INTO users 
           (telegram_id, first_name, last_name, username, country_code, current_level, fish_balance, cat_hints, cross_hints, tutorial_completed, avatar_id, frame_id, display_name, last_active_at)
-         VALUES (?, ?, ?, ?, ?, 1, 0, 3, 5, 0, ?, ?, ?, NOW())`,
-        [telegramId, firstName, lastName, username, countryCode, avatarId, frameId, displayName]
+         VALUES (?, ?, ?, ?, ?, 1, 0, 3, 5, 0, 1, 1, ?, NOW())`,
+        [telegramId, firstName, lastName, username, countryCode, displayName]
       );
 
       const [newUserRows] = await pool.query<RowDataPacket[]>(
@@ -65,8 +65,8 @@ export async function POST(request: Request) {
     } else {
       user = userRows[0];
       isNew = !Boolean(user.tutorial_completed);
-      avatarId = user.avatar_id || Math.floor(Math.random() * 9) + 1;
-      frameId = user.frame_id || Math.floor(Math.random() * 9) + 1;
+      avatarId = user.avatar_id ? Number(user.avatar_id) : 1;
+      frameId = user.frame_id ? Number(user.frame_id) : 1;
       displayName = user.display_name || firstName;
 
       const needsProfileInit = !user.avatar_id || !user.frame_id || !user.display_name;
@@ -93,14 +93,23 @@ export async function POST(request: Request) {
       [telegramId]
     );
 
+    // Only avatars 1 and 2 and frames 1 and 2 are free. All others (3..9) require purchase in user_unlocks
     const unlockedAvatars = new Set<number>([1, 2]);
     const unlockedFrames = new Set<number>([1, 2]);
-    if (avatarId) unlockedAvatars.add(avatarId);
-    if (frameId) unlockedFrames.add(frameId);
 
     for (const u of unlockRows) {
       if (u.item_type === 'avatar') unlockedAvatars.add(Number(u.item_id));
       if (u.item_type === 'frame') unlockedFrames.add(Number(u.item_id));
+    }
+
+    // If an existing user has an equipped avatar or frame > 2 that they haven't unlocked, reset to default 1
+    if (!unlockedAvatars.has(avatarId)) {
+      avatarId = 1;
+      await pool.query('UPDATE users SET avatar_id = 1 WHERE telegram_id = ?', [telegramId]);
+    }
+    if (!unlockedFrames.has(frameId)) {
+      frameId = 1;
+      await pool.query('UPDATE users SET frame_id = 1 WHERE telegram_id = ?', [telegramId]);
     }
 
     return NextResponse.json({

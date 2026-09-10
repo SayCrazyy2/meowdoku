@@ -100,12 +100,28 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
+        <motion.div
+          key="profile-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              playTap();
+              triggerHaptic('light');
+              onClose();
+            }
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+        >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 15 }}
+            key="profile-modal-card"
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 15 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            exit={{ opacity: 0, scale: 0.92, y: 12 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            onClick={(e) => e.stopPropagation()}
             className="w-full max-w-sm bg-[#FFFDF9] rounded-[32px] p-6 shadow-2xl border border-[#F0E6DA] flex flex-col gap-4 relative overflow-hidden"
           >
             {/* Header: Title and Close Button */}
@@ -349,7 +365,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               {saving ? (t('saving') || 'Saving...') : (t('confirm') || 'Confirm')}
             </button>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

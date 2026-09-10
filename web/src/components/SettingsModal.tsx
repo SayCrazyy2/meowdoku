@@ -127,7 +127,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   return (
     <AnimatePresence>
       {isOpen && (
-        <div
+        <motion.div
+          key="settings-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              playTap();
+              triggerHaptic('light');
+              onClose();
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none overscroll-contain"
           onTouchMove={(e) => {
             if (e.target === e.currentTarget) {
@@ -136,9 +148,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 15 }}
+            key="settings-modal-card"
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 15 }}
+            exit={{ opacity: 0, scale: 0.92, y: 12 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            onClick={(e) => e.stopPropagation()}
             className="w-full max-w-[330px] sm:max-w-[350px] bg-[#FFFDF9] rounded-3xl shadow-2xl border-2 border-[#EADECF] p-5 sm:p-6 overflow-hidden overscroll-contain"
           >
             {/* 1. SETTINGS VIEW */}
@@ -440,7 +455,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </div>
             )}
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

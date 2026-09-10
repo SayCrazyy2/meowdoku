@@ -18,15 +18,22 @@ interface ShopBundleItem {
   discount_percent: number;
 }
 
+export interface PurchaseResult {
+  type: 'cat_hints' | 'cross_hints' | 'avatar' | 'frame';
+  id: string | number;
+  quantity: number;
+}
+
 interface ShopModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserProfile;
   initData: string;
-  onPurchaseSuccess: () => void;
+  onPurchaseSuccess: (purchase?: PurchaseResult) => void;
   safeTop?: number;
   safeBottom?: number;
   initialTab?: 'hints' | 'cosmetics';
+  bundles?: ShopBundleItem[];
 }
 
 export const ShopModal: React.FC<ShopModalProps> = ({
@@ -90,12 +97,12 @@ export const ShopModal: React.FC<ShopModalProps> = ({
     setActiveTab(initialTab);
     setErrorMessage(null);
 
-    // Sync unlocked items from user object
+    // Sync unlocked items from user object safely without discarding
     if (user.unlocked_avatars) {
-      setUnlockedAvatars(Array.from(new Set([1, 2, ...user.unlocked_avatars])));
+      setUnlockedAvatars(prev => Array.from(new Set([1, 2, ...prev, ...(user.unlocked_avatars || [])])));
     }
     if (user.unlocked_frames) {
-      setUnlockedFrames(Array.from(new Set([1, 2, ...user.unlocked_frames])));
+      setUnlockedFrames(prev => Array.from(new Set([1, 2, ...prev, ...(user.unlocked_frames || [])])));
     }
 
     // Load latest data from /api/shop/items
@@ -109,10 +116,10 @@ export const ShopModal: React.FC<ShopModalProps> = ({
             setBundles(data.bundles);
           }
           if (data.unlocked_avatars) {
-            setUnlockedAvatars(Array.from(new Set([1, 2, ...data.unlocked_avatars])));
+            setUnlockedAvatars(prev => Array.from(new Set([1, 2, ...prev, ...data.unlocked_avatars])));
           }
           if (data.unlocked_frames) {
-            setUnlockedFrames(Array.from(new Set([1, 2, ...data.unlocked_frames])));
+            setUnlockedFrames(prev => Array.from(new Set([1, 2, ...prev, ...data.unlocked_frames])));
           }
         }
       })
@@ -184,6 +191,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
     triggerHaptic('success');
     playWin();
 
+    let quantity = 1;
+    if (type === 'cat_hints' || type === 'cross_hints') {
+      const found = bundles.find(b => String(b.id) === String(id));
+      if (found) {
+        quantity = found.quantity;
+      }
+    }
+
     if (type === 'avatar') {
       const aId = Number(id);
       setUnlockedAvatars(prev => Array.from(new Set([...prev, aId])));
@@ -197,7 +212,11 @@ export const ShopModal: React.FC<ShopModalProps> = ({
       setSuccessToast(null);
     }, 3500);
 
-    onPurchaseSuccess();
+    onPurchaseSuccess({
+      type,
+      id,
+      quantity,
+    });
   };
 
   if (!isOpen) return null;

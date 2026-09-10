@@ -73,6 +73,7 @@ class SoundFX {
 
   constructor() {
     if (typeof window !== 'undefined') {
+      this.initBGM();
       this.preloadBtnClick();
       this.preloadCatReveal();
       this.preloadGameLoad();
@@ -186,6 +187,7 @@ class SoundFX {
 
   // Game load sound using /audios/game-load.mp3
   playGameLoad() {
+    this.ensureBGMPlaying();
     if (!isSoundEnabled() || typeof window === 'undefined') return;
     this.initCtx();
 
@@ -221,6 +223,7 @@ class SoundFX {
 
   // Button click sound using /audios/btn-click.mp3
   playTap() {
+    this.ensureBGMPlaying();
     if (!isSoundEnabled() || typeof window === 'undefined') return;
     this.initCtx();
 
@@ -257,6 +260,7 @@ class SoundFX {
 
   // Cross sound (wooden tap)
   playCross() {
+    this.ensureBGMPlaying();
     if (!isSoundEnabled()) return;
     this.initCtx();
     if (!this.ctx) return;
@@ -281,6 +285,7 @@ class SoundFX {
 
   // Uncross / erase sound
   playUncross() {
+    this.ensureBGMPlaying();
     if (!isSoundEnabled()) return;
     this.initCtx();
     if (!this.ctx) return;
@@ -305,6 +310,7 @@ class SoundFX {
 
   // Cat reveal sound using /audios/cat-reveal.wav
   playCatMeow() {
+    this.ensureBGMPlaying();
     if (!isSoundEnabled() || !isVoiceEnabled() || typeof window === 'undefined') return;
     this.initCtx();
 
@@ -476,17 +482,29 @@ class SoundFX {
       this.bgmAudio.loop = true;
       this.bgmAudio.volume = getMusicVolume();
       this.bgmAudio.preload = 'auto';
+      try {
+        (this.bgmAudio as any).playsInline = true;
+      } catch {}
+
+      this.bgmAudio.addEventListener('play', () => {
+        this.isBgmPlaying = true;
+      });
+      this.bgmAudio.addEventListener('pause', () => {
+        if (this.bgmAudio?.paused) {
+          this.isBgmPlaying = false;
+        }
+      });
     }
 
     if (!this.hasVisibilityListener && typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-          if (this.bgmAudio && this.isBgmPlaying) {
+          if (this.bgmAudio && !this.bgmAudio.paused) {
             this.bgmAudio.pause();
           }
         } else {
-          if (this.bgmAudio && this.isBgmPlaying && isMusicEnabled()) {
-            this.bgmAudio.play().catch(() => {});
+          if (this.bgmAudio && isMusicEnabled()) {
+            this.startBGM();
           }
         }
       });
@@ -498,21 +516,50 @@ class SoundFX {
     if (typeof window === 'undefined' || this.hasInteractionListener) return;
     this.hasInteractionListener = true;
 
-    const unlock = () => {
-      if (isMusicEnabled() && this.bgmAudio) {
-        this.bgmAudio.play().then(() => {
-          this.isBgmPlaying = true;
-        }).catch(() => {});
+    // Use touch completion and click events that browsers accept as valid user activations
+    const events: (keyof WindowEventMap)[] = ['click', 'touchend', 'pointerup', 'keydown'];
+
+    const tryUnlock = () => {
+      if (!isMusicEnabled()) {
+        cleanup();
+        return;
       }
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('click', unlock);
+
+      this.initBGM();
+      if (!this.bgmAudio) return;
+
+      this.bgmAudio.volume = getMusicVolume();
+      const playPromise = this.bgmAudio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            this.isBgmPlaying = true;
+            cleanup();
+          })
+          .catch(() => {
+            // Keep listener attached if rejected so subsequent taps can unlock
+          });
+      }
+    };
+
+    const cleanup = () => {
+      events.forEach((ev) => {
+        window.removeEventListener(ev, tryUnlock, true);
+        document.removeEventListener(ev, tryUnlock, true);
+      });
       this.hasInteractionListener = false;
     };
 
-    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
-    window.addEventListener('touchstart', unlock, { once: true, passive: true });
-    window.addEventListener('click', unlock, { once: true, passive: true });
+    events.forEach((ev) => {
+      window.addEventListener(ev, tryUnlock, { capture: true, passive: true });
+      document.addEventListener(ev, tryUnlock, { capture: true, passive: true });
+    });
+  }
+
+  private ensureBGMPlaying() {
+    if (isMusicEnabled() && (!this.isBgmPlaying || (this.bgmAudio && this.bgmAudio.paused))) {
+      this.startBGM();
+    }
   }
 
   // Background music using /audios/background.mp3 in loop
@@ -523,6 +570,7 @@ class SoundFX {
 
     if (this.isBgmPlaying && !this.bgmAudio.paused) return;
 
+    this.bgmAudio.volume = getMusicVolume();
     const playPromise = this.bgmAudio.play();
     if (playPromise !== undefined) {
       playPromise
@@ -530,7 +578,7 @@ class SoundFX {
           this.isBgmPlaying = true;
         })
         .catch(() => {
-          // Autoplay blocked by browser policy until user gesture: attach listener
+          // Autoplay blocked by browser policy until user gesture: attach persistent unlock listener
           this.attachUnlockListener();
         });
     }
