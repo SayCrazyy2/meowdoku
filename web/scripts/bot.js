@@ -41,6 +41,14 @@ try {
   console.error('Failed to create MySQL pool:', e);
 }
 
+// Start WebSocket server for authoritative real-time gameplay tracking
+try {
+  const { startWsServer } = require('./wsServer');
+  startWsServer();
+} catch (e) {
+  console.error('[Bot] Failed to start WebSocket server:', e);
+}
+
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 async function callTelegram(method, body) {

@@ -20,6 +20,7 @@ interface GameBoardProps {
   onBoardChange: (newBoard: CellState[][]) => void;
   onLoseFish: () => void;
   isWon: boolean;
+  onCellAction?: (action: 'cross' | 'uncross' | 'cat', r: number, c: number) => void;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
@@ -28,14 +29,24 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onBoardChange,
   onLoseFish,
   isWon,
+  onCellAction,
 }) => {
   const size = level.size;
   const [brokenHearts, setBrokenHearts] = useState<BrokenHeartAnimation[]>([]);
   const [shakingCells, setShakingCells] = useState<Set<string>>(new Set());
   const [invalidCrosses, setInvalidCrosses] = useState<Set<string>>(new Set());
 
-  // Timer reference for detecting single click (Cross) vs double click (Cat)
-  const clickTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  // Tracking for instant cross, double-tap cat detection, and uncross delays
+  const lastCellTapRef = useRef<{ [key: string]: number }>({});
+  const uncrossTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
+
+  // Reset timers and invalid crosses when level changes
+  React.useEffect(() => {
+    setInvalidCrosses(new Set());
+    Object.values(uncrossTimeoutRef.current).forEach(t => clearTimeout(t));
+    uncrossTimeoutRef.current = {};
+    lastCellTapRef.current = {};
+  }, [level]);
 
   // Drag / swipe state for sliding across multiple cells
   const isDraggingRef = useRef<boolean>(false);
@@ -51,6 +62,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const applyCellSweep = (r: number, c: number, mode: 'cross' | 'uncross') => {
     if (isWon) return;
     const key = `${r},${c}`;
+    // Red crosses can NEVER be modified or uncrossed
+    if (invalidCrosses.has(key)) return;
     if (sweptCellsRef.current.has(key)) return;
     sweptCellsRef.current.add(key);
 
@@ -58,10 +71,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
     if (mode === 'cross') {
       if (curVal === 0) {
-        if (clickTimeoutRef.current[key]) {
-          clearTimeout(clickTimeoutRef.current[key]);
-          delete clickTimeoutRef.current[key];
-        }
         playCross();
         triggerHaptic('light');
 
@@ -69,26 +78,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         newBoard[r][c] = 1;
         currentBoardRef.current = newBoard;
         onBoardChange(newBoard);
+        onCellAction?.('cross', r, c);
       }
     } else if (mode === 'uncross') {
-      if (curVal === 1) {
-        if (clickTimeoutRef.current[key]) {
-          clearTimeout(clickTimeoutRef.current[key]);
-          delete clickTimeoutRef.current[key];
+      if (curVal === 1 && !invalidCrosses.has(key)) {
+        if (uncrossTimeoutRef.current[key]) {
+          clearTimeout(uncrossTimeoutRef.current[key]);
+          delete uncrossTimeoutRef.current[key];
         }
         playUncross();
         triggerHaptic('light');
-
-        setInvalidCrosses(prev => {
-          const next = new Set(prev);
-          next.delete(key);
-          return next;
-        });
 
         const newBoard = currentBoardRef.current.map(row => [...row]);
         newBoard[r][c] = 0;
         currentBoardRef.current = newBoard;
         onBoardChange(newBoard);
+        onCellAction?.('uncross', r, c);
       }
     }
   };
@@ -102,6 +107,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const r = Number(el.getAttribute('data-r'));
       const c = Number(el.getAttribute('data-c'));
       if (!isNaN(r) && !isNaN(c)) {
+        const key = `${r},${c}`;
+        if (invalidCrosses.has(key)) return;
+
         dragStartCoordRef.current = { r, c, x: touch.clientX, y: touch.clientY };
         isDraggingRef.current = false;
         dragModeRef.current = null;
@@ -109,7 +117,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         hasTriggeredLongPressRef.current = false;
 
         // Start long-press timer to place cat if held without dragging
-        if (currentBoardRef.current[r][c] === 0) {
+        if (currentBoardRef.current[r][c] === 0 || (currentBoardRef.current[r][c] === 1 && !invalidCrosses.has(key))) {
           if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
           longPressTimerRef.current = setTimeout(() => {
             if (!isDraggingRef.current) {
@@ -153,9 +161,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       dragModeRef.current = mode;
 
       const startKey = `${start.r},${start.c}`;
-      if (clickTimeoutRef.current[startKey]) {
-        clearTimeout(clickTimeoutRef.current[startKey]);
-        delete clickTimeoutRef.current[startKey];
+      if (uncrossTimeoutRef.current[startKey]) {
+        clearTimeout(uncrossTimeoutRef.current[startKey]);
+        delete uncrossTimeoutRef.current[startKey];
       }
 
       applyCellSweep(start.r, start.c, mode);
@@ -205,6 +213,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const r = Number(el.getAttribute('data-r'));
       const c = Number(el.getAttribute('data-c'));
       if (!isNaN(r) && !isNaN(c)) {
+        const key = `${r},${c}`;
+        if (invalidCrosses.has(key)) return;
+
         dragStartCoordRef.current = { r, c, x: e.clientX, y: e.clientY };
         isDraggingRef.current = false;
         dragModeRef.current = null;
@@ -237,9 +248,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       dragModeRef.current = mode;
 
       const startKey = `${start.r},${start.c}`;
-      if (clickTimeoutRef.current[startKey]) {
-        clearTimeout(clickTimeoutRef.current[startKey]);
-        delete clickTimeoutRef.current[startKey];
+      if (uncrossTimeoutRef.current[startKey]) {
+        clearTimeout(uncrossTimeoutRef.current[startKey]);
+        delete uncrossTimeoutRef.current[startKey];
       }
 
       applyCellSweep(start.r, start.c, mode);
@@ -320,21 +331,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const attemptPlaceCat = (r: number, c: number) => {
     if (isWon) return;
     const key = `${r},${c}`;
-    if (clickTimeoutRef.current[key]) {
-      clearTimeout(clickTimeoutRef.current[key]);
-      delete clickTimeoutRef.current[key];
+    if (invalidCrosses.has(key)) return;
+
+    if (uncrossTimeoutRef.current[key]) {
+      clearTimeout(uncrossTimeoutRef.current[key]);
+      delete uncrossTimeoutRef.current[key];
     }
 
     const isValid = validateCatPlacement(r, c);
 
     if (!isValid) {
       // Invalid cat placement: automatically place Red Cross and trigger error/lose fish!
+      // Once placed, red cross can NEVER be uncrossed!
       setInvalidCrosses(prev => new Set(prev).add(key));
       const newBoard = currentBoardRef.current.map(row => [...row]);
       newBoard[r][c] = 1; // Mark as Cross
       currentBoardRef.current = newBoard;
       onBoardChange(newBoard);
       triggerErrorAnimation(r, c);
+      onCellAction?.('cross', r, c);
     } else {
       // Valid cat placement!
       playCatMeow();
@@ -343,12 +358,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       newBoard[r][c] = 2; // Mark as Cat
       currentBoardRef.current = newBoard;
       onBoardChange(newBoard);
+      onCellAction?.('cat', r, c);
     }
   };
 
   const handleContextMenu = (e: React.MouseEvent, r: number, c: number) => {
     e.preventDefault();
-    if (isWon || board[r][c] !== 0) return;
+    const key = `${r},${c}`;
+    if (isWon || invalidCrosses.has(key)) return;
+
+    if (board[r][c] === 2) {
+      // Right click removes cat if placed by mistake
+      playUncross();
+      triggerHaptic('light');
+      const newBoard = currentBoardRef.current.map(row => [...row]);
+      newBoard[r][c] = 0;
+      currentBoardRef.current = newBoard;
+      onBoardChange(newBoard);
+      onCellAction?.('uncross', r, c);
+      return;
+    }
+
     attemptPlaceCat(r, c);
   };
 
@@ -357,44 +387,78 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const key = `${r},${c}`;
     const currentVal = board[r][c];
 
-    // If cell already has a placed item (cross or cat), single tap immediately unplaces it!
-    if (currentVal !== 0) {
-      if (clickTimeoutRef.current[key]) {
-        clearTimeout(clickTimeoutRef.current[key]);
-        delete clickTimeoutRef.current[key];
-      }
-      playUncross();
-      triggerHaptic('light');
-
-      setInvalidCrosses(prev => {
-        const next = new Set(prev);
-        next.delete(key);
-        return next;
-      });
-
-      const newBoard = board.map(row => [...row]);
-      newBoard[r][c] = 0;
-      onBoardChange(newBoard);
+    // 1. Red crosses (invalid cats) can NEVER be uncrossed or modified
+    if (invalidCrosses.has(key)) {
       return;
     }
 
-    // Cell is currently empty (0): detect single click vs double click
-    if (clickTimeoutRef.current[key]) {
-      // DOUBLE CLICK DETECTED -> Place Cat!
-      clearTimeout(clickTimeoutRef.current[key]);
-      delete clickTimeoutRef.current[key];
-      attemptPlaceCat(r, c);
-    } else {
-      // First click: wait 240ms for possible second click
-      clickTimeoutRef.current[key] = setTimeout(() => {
-        delete clickTimeoutRef.current[key];
-        // SINGLE CLICK -> Place Cross!
-        playCross();
+    const now = Date.now();
+    const lastTap = lastCellTapRef.current[key] || 0;
+    const isDoubleTap = now - lastTap < 340;
+    lastCellTapRef.current[key] = now;
+
+    // 2. Single touch on Cat CANNOT remove it!
+    if (currentVal === 2) {
+      if (isDoubleTap) {
+        // Deliberate double-tap on an existing cat allows player to pick it back up
+        playUncross();
         triggerHaptic('light');
-        const newBoard = board.map(row => [...row]);
-        newBoard[r][c] = 1;
+        const newBoard = currentBoardRef.current.map(row => [...row]);
+        newBoard[r][c] = 0;
+        currentBoardRef.current = newBoard;
         onBoardChange(newBoard);
-      }, 240);
+        onCellAction?.('uncross', r, c);
+      }
+      // Single touch on Cat does nothing (protected!)
+      return;
+    }
+
+    // 3. Cell is a normal Cross (1)
+    if (currentVal === 1) {
+      if (uncrossTimeoutRef.current[key]) {
+        clearTimeout(uncrossTimeoutRef.current[key]);
+        delete uncrossTimeoutRef.current[key];
+      }
+
+      if (isDoubleTap) {
+        // Double-click on cell with cross reveals Cat (or invalidates if illegal)!
+        attemptPlaceCat(r, c);
+        return;
+      }
+
+      // Single click on cross: queue uncross (with short 220ms grace window so double-click cancels it)
+      uncrossTimeoutRef.current[key] = setTimeout(() => {
+        delete uncrossTimeoutRef.current[key];
+        if (currentBoardRef.current[r][c] === 1 && !invalidCrosses.has(key)) {
+          playUncross();
+          triggerHaptic('light');
+          const newBoard = currentBoardRef.current.map(row => [...row]);
+          newBoard[r][c] = 0;
+          currentBoardRef.current = newBoard;
+          onBoardChange(newBoard);
+          onCellAction?.('uncross', r, c);
+        }
+      }, 220);
+      return;
+    }
+
+    // 4. Cell is Empty (0)
+    if (currentVal === 0) {
+      if (isDoubleTap) {
+        // Double click on empty cell reveals Cat!
+        attemptPlaceCat(r, c);
+        return;
+      }
+
+      // Single click on empty cell: INSTANT CROSS with 0ms delay!
+      playCross();
+      triggerHaptic('light');
+      const newBoard = currentBoardRef.current.map(row => [...row]);
+      newBoard[r][c] = 1;
+      currentBoardRef.current = newBoard;
+      onBoardChange(newBoard);
+      onCellAction?.('cross', r, c);
+      return;
     }
   };
 

@@ -22,6 +22,7 @@ import {
 } from '../lib/soundEffects';
 import { triggerHaptic } from '../lib/haptics';
 import { useI18n } from '../lib/i18n';
+import { useGameSocket } from '../lib/useGameSocket';
 import { preloadAllGameAssets } from '../lib/assetPreloader';
 import { Header } from '../components/Header';
 import { GameBoard } from '../components/GameBoard';
@@ -82,6 +83,47 @@ export default function App() {
   const [fishAwarded, setFishAwarded] = useState<number>(0);
 
   const levelStartTimeRef = useRef<number>(Date.now());
+  const sessionTokenRef = useRef<string | null>(null);
+
+  const {
+    connect: connectSocket,
+    disconnect: disconnectSocket,
+    sendCellAction,
+    sendLoseFish,
+    sendHintUsed,
+  } = useGameSocket();
+
+  const initGameSession = useCallback(async (lvlNum: number, isDaily: boolean = false) => {
+    sessionTokenRef.current = null;
+    disconnectSocket();
+    if (!initData) return;
+
+    try {
+      const res = await fetch('/api/game/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${initData}`,
+        },
+        body: JSON.stringify({
+          level_number: lvlNum,
+          is_daily_challenge: isDaily,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.session_token) {
+          sessionTokenRef.current = data.session_token;
+          if (user?.telegram_id) {
+            connectSocket(data.session_token, user.telegram_id);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not initialize server game session:', e);
+    }
+  }, [initData, user?.telegram_id, connectSocket, disconnectSocket]);
 
   // Stopwatch timer for Daily Challenge
   useEffect(() => {
@@ -435,6 +477,7 @@ export default function App() {
 
   // 4. Load Level (Instant when preloaded, no loading screen)
   const startLevel = useCallback(async (lvlNum: number) => {
+    initGameSession(lvlNum, false);
     const cached = getCachedLevel(lvlNum);
 
     if (cached) {
@@ -492,10 +535,11 @@ export default function App() {
     } else {
       setScreen('home');
     }
-  }, []);
+  }, [initGameSession]);
 
   // 4b. Start Daily Challenge (Instant when preloaded, no loading screen)
   const startDailyChallenge = useCallback(async () => {
+    initGameSession(9999, true);
     const cached = getCachedDailyChallenge();
 
     if (cached) {
@@ -547,7 +591,7 @@ export default function App() {
     } else {
       setScreen('home');
     }
-  }, []);
+  }, [initGameSession]);
 
   // 5. Check for victory condition on board change
   const checkVictory = useCallback(
@@ -582,7 +626,7 @@ export default function App() {
         }
       }
 
-      // Level Won!
+      // Level Won! Instant UI reaction (Zero Lag)
       setIsWon(true);
       playWin();
       triggerHaptic('success');
@@ -595,57 +639,59 @@ export default function App() {
         const finalTime = Math.max(1, timerSeconds || durationSec);
         setDailyDuration(finalTime);
         setDailyChallengeCompleted(true);
+        setIsDailyVictoryOpen(true); // Immediate modal display
 
-        try {
-          await fetch('/api/user/daily-challenge', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${initData}`,
-            },
-            body: JSON.stringify({ duration_seconds: finalTime }),
-          });
-        } catch (err) {
-          console.error('Failed to sync daily challenge completion:', err);
-        }
-
-        setIsDailyVictoryOpen(true);
-        return;
-      }
-
-      // Save normal progress to database via /api/user/progress
-      try {
-        const res = await fetch('/api/user/progress', {
+        fetch('/api/user/daily-challenge', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${initData}`,
           },
-          body: JSON.stringify({
-            level_number: currentLevelNumber,
-            completed: true,
-            fish_remaining: remainingFish,
-            cat_hints_used: catHintsUsed,
-            cross_hints_used: crossHintsUsed,
-            duration_seconds: durationSec,
-          }),
+          body: JSON.stringify({ duration_seconds: finalTime }),
+        }).catch(err => {
+          console.error('Failed to sync daily challenge completion:', err);
         });
 
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.user) {
-            setUser(json.user);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to sync progress:', err);
+        return;
       }
+
+      // Immediate modal display without waiting for database round-trip!
+      setIsVictoryOpen(true);
+
+      // Save progress to database in background via /api/user/progress
+      fetch('/api/user/progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${initData}`,
+        },
+        body: JSON.stringify({
+          session_token: sessionTokenRef.current,
+          level_number: currentLevelNumber,
+          completed: true,
+          fish_remaining: remainingFish,
+          cat_hints_used: catHintsUsed,
+          cross_hints_used: crossHintsUsed,
+          duration_seconds: durationSec,
+          cats: catPositions,
+        }),
+      })
+        .then(async res => {
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.user) {
+              setUser(prev => (prev ? { ...prev, ...json.user } : json.user));
+            }
+          }
+        })
+        .catch(err => {
+          console.error('Failed to sync progress:', err);
+        });
 
       if (!isDailyChallenge) {
         // Preload 1 more level in background to keep 5 ahead
         preloadLevel(currentLevelNumber + 5);
       }
-      setIsVictoryOpen(true);
     },
     [currentLevelNumber, initData, catHintsUsed, crossHintsUsed, isDailyChallenge, timerSeconds]
   );
@@ -664,8 +710,11 @@ export default function App() {
       playFail();
       triggerHaptic('error');
       setIsDefeatOpen(true);
+      sendLoseFish(0);
     } else {
-      setFishRemaining(prev => prev - 1);
+      const nextFish = fishRemaining - 1;
+      setFishRemaining(nextFish);
+      sendLoseFish(nextFish);
     }
   };
 
@@ -685,6 +734,7 @@ export default function App() {
 
     setCatHintsUsed(prev => prev + 1);
     setUser(prev => (prev ? { ...prev, cat_hints: Math.max(0, prev.cat_hints - 1) } : null));
+    sendHintUsed('cat');
 
     if (!isDailyChallenge) {
       fetch('/api/user/progress', {
@@ -694,6 +744,7 @@ export default function App() {
           Authorization: `Bearer ${initData}`,
         },
         body: JSON.stringify({
+          session_token: sessionTokenRef.current,
           level_number: currentLevelNumber,
           completed: false,
           cat_hints_used: 1,
@@ -723,6 +774,7 @@ export default function App() {
 
     setCrossHintsUsed(prev => prev + 1);
     setUser(prev => (prev ? { ...prev, cross_hints: Math.max(0, prev.cross_hints - 1) } : null));
+    sendHintUsed('cross');
 
     if (!isDailyChallenge) {
       fetch('/api/user/progress', {
@@ -732,6 +784,7 @@ export default function App() {
           Authorization: `Bearer ${initData}`,
         },
         body: JSON.stringify({
+          session_token: sessionTokenRef.current,
           level_number: currentLevelNumber,
           completed: false,
           cat_hints_used: 0,
@@ -884,6 +937,7 @@ export default function App() {
               onBoardChange={handleBoardChange}
               onLoseFish={handleLoseFish}
               isWon={isWon}
+              onCellAction={sendCellAction}
             />
           </section>
 
