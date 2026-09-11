@@ -34,6 +34,13 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
+        {/* Monetag SDK for Rewarded Ads */}
+        <script
+          src="//libtl.com/sdk.js"
+          data-zone={process.env.NEXT_PUBLIC_MONETAG_ZONE_ID || "11771509"}
+          data-sdk={`show_${process.env.NEXT_PUBLIC_MONETAG_ZONE_ID || "11771509"}`}
+          async
+        />
       </head>
       <body className="bg-[#FAF7F2] text-[#3D2C1E] font-['Baloo_2',sans-serif] antialiased select-none overflow-x-hidden">
         <I18nProvider>{children}</I18nProvider>

@@ -23,6 +23,7 @@ import {
 import { triggerHaptic } from '../lib/haptics';
 import { useI18n } from '../lib/i18n';
 import { useGameSocket } from '../lib/useGameSocket';
+import { showRewardedAd } from '../lib/monetag';
 import { preloadAllGameAssets } from '../lib/assetPreloader';
 import { Header } from '../components/Header';
 import { GameBoard } from '../components/GameBoard';
@@ -794,6 +795,68 @@ export default function App() {
     }
   };
 
+  // 9b. Watch Monetag Rewarded Ad to earn a free hint when count is 0
+  const [isAdLoading, setIsAdLoading] = useState(false);
+
+  const handleWatchAd = async (type: 'cat' | 'cross') => {
+    if (isAdLoading) return;
+    setIsAdLoading(true);
+    triggerHaptic('medium');
+
+    try {
+      // 1. Play Monetag Rewarded Interstitial
+      await showRewardedAd();
+
+      // 2. Ad watched successfully! Award +1 hint
+      triggerHaptic('success');
+      playWin();
+
+      // Optimistically update client state so badge immediately turns from Play icon to 1
+      setUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          cat_hints: type === 'cat' ? (prev.cat_hints || 0) + 1 : prev.cat_hints,
+          cross_hints: type === 'cross' ? (prev.cross_hints || 0) + 1 : prev.cross_hints,
+        };
+      });
+
+      // 3. Persist +1 hint to MySQL database
+      if (initData) {
+        const res = await fetch('/api/user/ad-reward', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${initData}`,
+          },
+          body: JSON.stringify({ hint_type: type }),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) {
+            setUser(prev =>
+              prev
+                ? {
+                    ...prev,
+                    cat_hints: json.cat_hints !== undefined ? json.cat_hints : prev.cat_hints,
+                    cross_hints: json.cross_hints !== undefined ? json.cross_hints : prev.cross_hints,
+                  }
+                : null
+            );
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn('[Ad] Watch ad error:', err);
+      if (err?.message) {
+        alert(err.message);
+      }
+    } finally {
+      setIsAdLoading(false);
+    }
+  };
+
   // 10. Restart current level after defeat
   const handleRestartLevel = () => {
     if (isDailyChallenge) {
@@ -947,6 +1010,7 @@ export default function App() {
             crossHints={user?.cross_hints || 0}
             onCatHint={handleCatHint}
             catHints={user?.cat_hints || 0}
+            onWatchAd={handleWatchAd}
           />
         </div>
       )}

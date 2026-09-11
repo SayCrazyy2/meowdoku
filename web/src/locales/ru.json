@@ -116,5 +116,18 @@
   "invoiceError": "Ошибка создания счета",
   "playOnTelegram": "Играть в Telegram",
   "miniAppModeTitle": "Режим Telegram Mini App",
-  "miniAppModeDesc": "Meowdoku безопасно авторизует игроков через Telegram Mini App. Пожалуйста, откройте игру через бота Telegram."
+  "miniAppModeDesc": "Meowdoku безопасно авторизует игроков через Telegram Mini App. Пожалуйста, откройте игру через бота Telegram.",
+  "checkInDailySubtitle": "Получайте 1 бесплатную подсказку кота или крестика каждый день при отметке! 🎁",
+  "comeBackTomorrow": "Возвращайтесь завтра за следующей бесплатной подсказкой! 🐾",
+  "checkedInRewardToast": "Отметка выполнена! Получено: {{reward}}! 🎁",
+  "freeCatHint": "+1 Бесплатная подсказка кота",
+  "freeCrossHint": "+1 Бесплатная подсказка крестика",
+  "freeHint": "+1 Бесплатная подсказка",
+  "day_sun": "ВС",
+  "day_mon": "ПН",
+  "day_tue": "ВТ",
+  "day_wed": "СР",
+  "day_thu": "ЧТ",
+  "day_fri": "ПТ",
+  "day_sat": "СБ"
 }

@@ -3,12 +3,14 @@
 import React from 'react';
 import { useI18n } from '@/lib/i18n';
 import { triggerHaptic } from '@/lib/haptics';
+import { Play } from 'lucide-react';
 
 interface ToolBarProps {
   onCrossHint: () => void;
   crossHints: number;
   onCatHint: () => void;
   catHints: number;
+  onWatchAd?: (type: 'cat' | 'cross') => void;
 }
 
 export const ToolBar: React.FC<ToolBarProps> = ({
@@ -16,19 +18,26 @@ export const ToolBar: React.FC<ToolBarProps> = ({
   crossHints,
   onCatHint,
   catHints,
+  onWatchAd,
 }) => {
   const { t } = useI18n();
 
-  const handleCross = () => {
-    if (crossHints <= 0) return;
+  const handleCat = () => {
     triggerHaptic('medium');
-    onCrossHint();
+    if (catHints <= 0) {
+      onWatchAd?.('cat');
+    } else {
+      onCatHint();
+    }
   };
 
-  const handleCat = () => {
-    if (catHints <= 0) return;
+  const handleCross = () => {
     triggerHaptic('medium');
-    onCatHint();
+    if (crossHints <= 0) {
+      onWatchAd?.('cross');
+    } else {
+      onCrossHint();
+    }
   };
 
   return (
@@ -37,11 +46,8 @@ export const ToolBar: React.FC<ToolBarProps> = ({
       <div className="flex flex-col items-center gap-1.5">
         <button
           onClick={handleCat}
-          disabled={catHints <= 0}
-          className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white shadow-md border-2 border-[#E8DFD3] flex items-center justify-center transition-transform active:scale-90 cursor-pointer ${
-            catHints > 0 ? 'hover:shadow-lg' : 'opacity-40 cursor-not-allowed'
-          }`}
-          title={t('catHint')}
+          className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white shadow-md border-2 border-[#E8DFD3] flex items-center justify-center transition-all hover:shadow-lg active:scale-90 cursor-pointer"
+          title={catHints > 0 ? t('catHint') : `${t('catHint')} (Watch Ad)`}
         >
           {/* Cat Head Icon */}
           <img
@@ -51,9 +57,17 @@ export const ToolBar: React.FC<ToolBarProps> = ({
             draggable={false}
           />
 
-          {/* Circular Notification Dot Badge on Corner */}
-          <div className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full bg-[#EA580C] text-white text-[11px] font-black shadow-xs flex items-center justify-center border-2 border-white select-none pointer-events-none">
-            {catHints}
+          {/* Circular Notification Dot Badge on Corner: Count or Play Icon */}
+          <div
+            className={`absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full text-white text-[11px] font-black shadow-xs flex items-center justify-center border-2 border-white select-none pointer-events-none transition-colors ${
+              catHints > 0 ? 'bg-[#EA580C]' : 'bg-[#10B981]'
+            }`}
+          >
+            {catHints > 0 ? (
+              catHints
+            ) : (
+              <Play className="w-2.5 h-2.5 fill-white text-white translate-x-[0.5px]" />
+            )}
           </div>
         </button>
         <span className="text-xs font-black text-[#5C4533]">{t('catHint')}</span>
@@ -63,11 +77,8 @@ export const ToolBar: React.FC<ToolBarProps> = ({
       <div className="flex flex-col items-center gap-1.5">
         <button
           onClick={handleCross}
-          disabled={crossHints <= 0}
-          className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white shadow-md border-2 border-[#E8DFD3] flex items-center justify-center transition-transform active:scale-90 cursor-pointer ${
-            crossHints > 0 ? 'hover:shadow-lg' : 'opacity-40 cursor-not-allowed'
-          }`}
-          title={t('crossHint')}
+          className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white shadow-md border-2 border-[#E8DFD3] flex items-center justify-center transition-all hover:shadow-lg active:scale-90 cursor-pointer"
+          title={crossHints > 0 ? t('crossHint') : `${t('crossHint')} (Watch Ad)`}
         >
           {/* Cross Icon */}
           <svg
@@ -84,9 +95,17 @@ export const ToolBar: React.FC<ToolBarProps> = ({
             />
           </svg>
 
-          {/* Circular Notification Dot Badge on Corner */}
-          <div className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full bg-[#EA580C] text-white text-[11px] font-black shadow-xs flex items-center justify-center border-2 border-white select-none pointer-events-none">
-            {crossHints}
+          {/* Circular Notification Dot Badge on Corner: Count or Play Icon */}
+          <div
+            className={`absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full text-white text-[11px] font-black shadow-xs flex items-center justify-center border-2 border-white select-none pointer-events-none transition-colors ${
+              crossHints > 0 ? 'bg-[#EA580C]' : 'bg-[#10B981]'
+            }`}
+          >
+            {crossHints > 0 ? (
+              crossHints
+            ) : (
+              <Play className="w-2.5 h-2.5 fill-white text-white translate-x-[0.5px]" />
+            )}
           </div>
         </button>
         <span className="text-xs font-black text-[#5C4533]">{t('crossHint')}</span>

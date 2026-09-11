@@ -116,5 +116,18 @@
   "invoiceError": "Error creating invoice",
   "playOnTelegram": "Play on Telegram",
   "miniAppModeTitle": "Telegram Mini App Mode",
-  "miniAppModeDesc": "Meowdoku authenticates players securely through Telegram Mini App credentials. Please open this URL inside your Telegram bot or web app."
+  "miniAppModeDesc": "Meowdoku authenticates players securely through Telegram Mini App credentials. Please open this URL inside your Telegram bot or web app.",
+  "checkInDailySubtitle": "Get 1 free Cat or Cross hint every day upon check-in! 🎁",
+  "comeBackTomorrow": "Come back tomorrow for your next free hint! 🐾",
+  "checkedInRewardToast": "Checked In! Received {{reward}}! 🎁",
+  "freeCatHint": "+1 Free Cat Hint",
+  "freeCrossHint": "+1 Free Cross Hint",
+  "freeHint": "+1 Free Hint",
+  "day_sun": "SUN",
+  "day_mon": "MON",
+  "day_tue": "TUE",
+  "day_wed": "WED",
+  "day_thu": "THU",
+  "day_fri": "FRI",
+  "day_sat": "SAT"
 }

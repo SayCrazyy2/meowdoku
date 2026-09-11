@@ -116,5 +116,18 @@
   "invoiceError": "创建账单失败",
   "playOnTelegram": "在 Telegram 上玩",
   "miniAppModeTitle": "Telegram 小程序模式",
-  "miniAppModeDesc": "Meowdoku 通过 Telegram 小程序凭据安全验证玩家身份。请在您的 Telegram 机器人或应用内打开此链接。"
+  "miniAppModeDesc": "Meowdoku 通过 Telegram 小程序凭据安全验证玩家身份。请在您的 Telegram 机器人或应用内打开此链接。",
+  "checkInDailySubtitle": "每日签到即可免费获得1个猫咪或叉号提示！🎁",
+  "comeBackTomorrow": "明天再来领取下一个免费提示吧！🐾",
+  "checkedInRewardToast": "签到成功！已获得{{reward}}！🎁",
+  "freeCatHint": "+1 免费猫咪提示",
+  "freeCrossHint": "+1 免费叉号提示",
+  "freeHint": "+1 免费提示",
+  "day_sun": "周日",
+  "day_mon": "周一",
+  "day_tue": "周二",
+  "day_wed": "周三",
+  "day_thu": "周四",
+  "day_fri": "周五",
+  "day_sat": "周六"
 }

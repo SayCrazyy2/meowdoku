@@ -132,10 +132,13 @@ export const DailyStreakModal: React.FC<DailyStreakModalProps> = ({
       playWin();
 
       // Show celebratory reward notification
-      const rewardText = reward?.name
-        ? `+1 Free ${reward.name}! 🎁`
-        : '+1 Free Hint! 🎁';
-      setRewardToast(`Checked In! Received ${rewardText}`);
+      let rewardLabel = t('freeHint') || '+1 Free Hint';
+      if (reward?.type === 'cat_hint' || reward?.name?.toLowerCase().includes('cat')) {
+        rewardLabel = t('freeCatHint') || '+1 Free Cat Hint';
+      } else if (reward?.type === 'cross_hint' || reward?.name?.toLowerCase().includes('cross')) {
+        rewardLabel = t('freeCrossHint') || '+1 Free Cross Hint';
+      }
+      setRewardToast(t('checkedInRewardToast', { reward: rewardLabel }) || `Checked In! Received ${rewardLabel}! 🎁`);
       setTimeout(() => setRewardToast(null), 4000);
 
       // Notify parent page of updated fields
@@ -253,7 +256,7 @@ export const DailyStreakModal: React.FC<DailyStreakModalProps> = ({
                     day.checked || day.isToday ? 'text-[#F28E2B]' : 'text-[#A1887F]'
                   }`}
                 >
-                  {day.dayLabel}
+                  {t(`day_${day.dayLabel.toLowerCase()}`) || day.dayLabel}
                 </span>
 
                 {/* Status Circle */}
@@ -309,8 +312,8 @@ export const DailyStreakModal: React.FC<DailyStreakModalProps> = ({
 
             <span className="text-[11px] font-bold text-[#A1887F] text-center">
               {!checkedIn
-                ? 'Get 1 free Cat or Cross hint every day upon check-in! 🎁'
-                : 'Come back tomorrow for your next free hint! 🐾'}
+                ? (t('checkInDailySubtitle') || 'Get 1 free Cat or Cross hint every day upon check-in! 🎁')
+                : (t('comeBackTomorrow') || 'Come back tomorrow for your next free hint! 🐾')}
             </span>
           </div>
         </div>

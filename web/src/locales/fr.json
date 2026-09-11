@@ -116,5 +116,18 @@
   "invoiceError": "Erreur lors de la création de la facture",
   "playOnTelegram": "Jouer sur Telegram",
   "miniAppModeTitle": "Mode Telegram Mini App",
-  "miniAppModeDesc": "Meowdoku authentifie les joueurs de manière sécurisée via Telegram Mini App. Veuillez ouvrir ce lien dans votre bot Telegram."
+  "miniAppModeDesc": "Meowdoku authentifie les joueurs de manière sécurisée via Telegram Mini App. Veuillez ouvrir ce lien dans votre bot Telegram.",
+  "checkInDailySubtitle": "Obtenez 1 indice Chat ou Croix gratuit chaque jour lors de l'enregistrement ! 🎁",
+  "comeBackTomorrow": "Revenez demain pour votre prochain indice gratuit ! 🐾",
+  "checkedInRewardToast": "Enregistré ! Vous avez reçu {{reward}} ! 🎁",
+  "freeCatHint": "+1 Indice Chat gratuit",
+  "freeCrossHint": "+1 Indice Croix gratuit",
+  "freeHint": "+1 Indice gratuit",
+  "day_sun": "DIM",
+  "day_mon": "LUN",
+  "day_tue": "MAR",
+  "day_wed": "MER",
+  "day_thu": "JEU",
+  "day_fri": "VEN",
+  "day_sat": "SAM"
 }

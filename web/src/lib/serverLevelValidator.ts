@@ -90,21 +90,61 @@ export function getLevelDetails(levelNum: number): {
   regionMap: number[][];
   solution: number[];
 } | null {
-  const size = getLevelSize(levelNum);
+  if (levelNum === 9999) {
+    const targetDate = new Date().toISOString().split('T')[0];
+    let hash = 0;
+    for (let i = 0; i < targetDate.length; i++) {
+      hash = (hash << 5) - hash + targetDate.charCodeAt(i);
+      hash |= 0;
+    }
+    const positiveHash = Math.abs(hash);
+    const size = 6;
+    const bankFilename = `bankData${size}x${size}.json`;
+    const rawBank: any = loadBank(bankFilename);
+    if (!rawBank) return null;
+    let rawList: any[] = [];
+    if (Array.isArray(rawBank)) {
+      rawList = rawBank;
+    } else if (typeof rawBank === 'object' && rawBank !== null) {
+      if ('levels' in rawBank && Array.isArray(rawBank.levels)) {
+        rawList = rawBank.levels;
+      } else {
+        const tiers = ['1', '2', '3'];
+        for (const t of tiers) {
+          const arr = (rawBank as any)[t];
+          if (Array.isArray(arr)) rawList.push(...arr);
+        }
+      }
+    }
+    if (rawList.length === 0) return null;
+    const index = positiveHash % rawList.length;
+    const transform = positiveHash % 8;
+    const rawEntry = rawList[index];
+    const originalMap = rawEntry.regionMap as number[][];
+    const originalSolution = rawEntry.solution as number[];
+    const transformed = transformPuzzle(originalMap, originalSolution, transform);
+    return {
+      size: transformed.regionMap.length,
+      regionMap: transformed.regionMap,
+      solution: transformed.solution,
+    };
+  }
+
+  const theoreticalSize = getLevelSize(levelNum);
   let bankFilename = '';
 
   if (SPECIAL_MILESTONE_LEVELS.has(levelNum)) {
     bankFilename = 'bankDataSP.json';
-  } else if (levelNum > 10 && levelNum % 5 === 0 && size >= 7 && size <= 10) {
+  } else if (levelNum > 10 && levelNum % 5 === 0 && theoreticalSize >= 7 && theoreticalSize <= 10) {
     const variantType = (levelNum / 5) % 2 === 0 ? 'GC' : 'LKStyle';
-    bankFilename = `bankData${variantType}${size}x${size}.json`;
+    bankFilename = `bankData${variantType}${theoreticalSize}x${theoreticalSize}.json`;
   } else {
-    bankFilename = `bankData${size}x${size}.json`;
+    bankFilename = `bankData${theoreticalSize}x${theoreticalSize}.json`;
   }
 
   let rawBank: any = loadBank(bankFilename);
-  if (!rawBank && bankFilename !== `bankData${size}x${size}.json`) {
-    bankFilename = `bankData${size}x${size}.json`;
+  if (!rawBank && bankFilename !== `bankData${theoreticalSize}x${theoreticalSize}.json`) {
+    bankFilename = `bankData${theoreticalSize}x${theoreticalSize}.json`;
     rawBank = loadBank(bankFilename);
   }
 
@@ -142,7 +182,7 @@ export function getLevelDetails(levelNum: number): {
 
   const transformed = transformPuzzle(originalMap, originalSolution, transform);
   return {
-    size,
+    size: transformed.regionMap.length,
     regionMap: transformed.regionMap,
     solution: transformed.solution,
   };

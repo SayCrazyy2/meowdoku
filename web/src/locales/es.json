@@ -116,5 +116,18 @@
   "invoiceError": "Error al crear la factura",
   "playOnTelegram": "Jugar en Telegram",
   "miniAppModeTitle": "Modo Telegram Mini App",
-  "miniAppModeDesc": "Meowdoku autentica a los jugadores de forma segura a través de Telegram Mini App. Abre esta URL dentro de tu bot de Telegram."
+  "miniAppModeDesc": "Meowdoku autentica a los jugadores de forma segura a través de Telegram Mini App. Abre esta URL dentro de tu bot de Telegram.",
+  "checkInDailySubtitle": "¡Consigue 1 pista gratis de Gato o Cruz cada día al registrarte! 🎁",
+  "comeBackTomorrow": "¡Vuelve mañana para tu próxima pista gratis! 🐾",
+  "checkedInRewardToast": "¡Registro exitoso! ¡Recibiste {{reward}}! 🎁",
+  "freeCatHint": "+1 Pista de Gato gratis",
+  "freeCrossHint": "+1 Pista de Cruz gratis",
+  "freeHint": "+1 Pista gratis",
+  "day_sun": "DOM",
+  "day_mon": "LUN",
+  "day_tue": "MAR",
+  "day_wed": "MIÉ",
+  "day_thu": "JUE",
+  "day_fri": "VIE",
+  "day_sat": "SÁB"
 }

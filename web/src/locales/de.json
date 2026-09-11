@@ -116,5 +116,18 @@
   "invoiceError": "Fehler beim Erstellen der Rechnung",
   "playOnTelegram": "Auf Telegram spielen",
   "miniAppModeTitle": "Telegram Mini App Modus",
-  "miniAppModeDesc": "Meowdoku authentifiziert Spieler sicher über Telegram Mini App. Bitte öffne diese URL in deinem Telegram-Bot."
+  "miniAppModeDesc": "Meowdoku authentifiziert Spieler sicher über Telegram Mini App. Bitte öffne diese URL in deinem Telegram-Bot.",
+  "checkInDailySubtitle": "Erhalte täglich beim Einchecken 1 kostenlosen Katzen- oder Kreuz-Tipp! 🎁",
+  "comeBackTomorrow": "Komm morgen wieder für deinen nächsten kostenlosen Tipp! 🐾",
+  "checkedInRewardToast": "Eingecheckt! {{reward}} erhalten! 🎁",
+  "freeCatHint": "+1 Gratis Katzen-Tipp",
+  "freeCrossHint": "+1 Gratis Kreuz-Tipp",
+  "freeHint": "+1 Gratis-Tipp",
+  "day_sun": "SO",
+  "day_mon": "MO",
+  "day_tue": "DI",
+  "day_wed": "MI",
+  "day_thu": "DO",
+  "day_fri": "FR",
+  "day_sat": "SA"
 }

@@ -116,5 +116,18 @@
   "invoiceError": "請求書の作成エラー",
   "playOnTelegram": "Telegramでプレイ",
   "miniAppModeTitle": "Telegramミニアプリモード",
-  "miniAppModeDesc": "MeowdokuはTelegramミニアプリ認証を通じて安全にプレイできます。Telegramボット内から開いてください。"
+  "miniAppModeDesc": "MeowdokuはTelegramミニアプリ認証を通じて安全にプレイできます。Telegramボット内から開いてください。",
+  "checkInDailySubtitle": "毎日のチェックインでネコまたは×のヒントを1つ無料で獲得！🎁",
+  "comeBackTomorrow": "明日の無料ヒントもお楽しみに！🐾",
+  "checkedInRewardToast": "チェックイン完了！{{reward}}を獲得しました！🎁",
+  "freeCatHint": "+1 無料のネコヒント",
+  "freeCrossHint": "+1 無料の×ヒント",
+  "freeHint": "+1 無料ヒント",
+  "day_sun": "日",
+  "day_mon": "月",
+  "day_tue": "火",
+  "day_wed": "水",
+  "day_thu": "木",
+  "day_fri": "金",
+  "day_sat": "土"
 }
