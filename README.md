@@ -1,6 +1,6 @@
-# Meowdoku 🐱
+# Meowdoku: Brain Puzzle Games - Open-source
 
-> **The Purr-fect Sudoku Puzzle** — An addictive, feline-themed logic puzzle built as a high-performance Telegram Mini App (TMA).
+**The Purr-fect Sudoku Puzzle** — An addictive, feline-themed logic puzzle built as a high-performance Telegram Mini App (TMA).
 
 [![Telegram Mini App](https://img.shields.io/badge/Telegram-Mini_App-24A1DE?style=flat&logo=telegram&logoColor=white)](https://t.me/meowdokubot)
 [![Next.js](https://img.shields.io/badge/Next.js-15.x-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -94,49 +94,6 @@ Meowdoku is a logic-based grid puzzle inspired by Star Battle / Queens with a ch
 | **Database** | [MySQL 8.x](https://www.mysql.com/) via `mysql2/promise` connection pooling |
 | **Telegram Integration** | Telegram WebApp SDK, Telegram Bot API (long polling service via `scripts/bot.js`) |
 
----
-
-## 📂 Project Structure
-
-```text
-meowdoku/
-├── src/
-│   ├── web/
-│   │   ├── public/                 # Static assets (images, avatars, frames, audio, lottie)
-│   │   ├── scripts/
-│   │   │   └── bot.js              # Telegram Bot polling service (pre_checkout & checkout)
-│   │   ├── src/
-│   │   │   ├── app/                # Next.js App Router
-│   │   │   │   ├── api/            # REST API endpoints (auth, streak, shop, leaderboard, etc.)
-│   │   │   │   ├── layout.tsx      # Root HTML layout & Telegram WebApp script loader
-│   │   │   │   └── page.tsx        # Main application state machine & screen coordinator
-│   │   │   ├── components/         # React UI components
-│   │   │   │   ├── Board.tsx       # Interactive puzzle grid
-│   │   │   │   ├── Header.tsx      # In-game top bar with fish balance and controls
-│   │   │   │   ├── HomeScreen.tsx  # Dashboard with daily challenge, streak card, logo
-│   │   │   │   ├── ShopModal.tsx   # Telegram Stars store (bundles & cosmetics)
-│   │   │   │   ├── DailyStreakModal.tsx # Streak view & manual check-in claim
-│   │   │   │   ├── LeaderboardModal.tsx # Global top 30 player rankings
-│   │   │   │   ├── ProfileModal.tsx# Avatar, frame, and display name customization
-│   │   │   │   ├── ToolBar.tsx     # Hint and undo action toolbar
-│   │   │   │   ├── UserAvatar.tsx  # Layered avatar + frame composite component
-│   │   │   │   └── *Lottie.tsx     # Animated Lottie wrappers
-│   │   │   ├── lib/                # Core utilities & engines
-│   │   │   │   ├── db.ts           # MySQL connection pool
-│   │   │   │   ├── i18n.tsx        # Internationalization provider & translations hook
-│   │   │   │   ├── levelSelector.ts# Level preload cache & deterministic puzzle selection
-│   │   │   │   ├── streakService.ts# Dynamic streak & progression calculation engine
-│   │   │   │   ├── soundEffects.ts # Procedural Web Audio API sound generator
-│   │   │   │   ├── haptics.ts      # Telegram native vibration trigger
-│   │   │   │   └── telegramAuth.ts # initData cryptographic validation
-│   │   │   └── locales/            # Translation dictionaries (en, hi, ru, es, fr, de, ja, zh)
-│   │   ├── .env.example            # Sample environment variables
-│   │   ├── .gitignore              # Git ignore configuration
-│   │   ├── package.json            # Node.js dependencies and scripts
-│   │   └── tsconfig.json           # TypeScript configuration
-```
-
----
 
 ## 🚀 Getting Started
 
@@ -148,8 +105,8 @@ meowdoku/
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/your-username/meowdoku.git
-cd meowdoku/src/web
+git clone https://github.com/nasirul786/meowdoku.git
+cd web
 ```
 
 ### 3. Install Dependencies
@@ -158,7 +115,7 @@ npm install
 ```
 
 ### 4. Configure Environment Variables
-Copy `.env.example` to `.env` inside `src/web/`:
+Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
@@ -272,7 +229,7 @@ To test inside Telegram on your mobile device or desktop:
 
 ## 📜 Available Scripts
 
-Inside `src/web/`:
+Inside `web/`:
 
 - `npm run dev`: Runs Next.js development server and the Telegram Bot polling script concurrently.
 - `npm run build`: Compiles the Next.js production build with TypeScript validation.
@@ -280,8 +237,3 @@ Inside `src/web/`:
 - `npm run bot`: Runs only the Telegram Bot polling worker.
 - `npm run lint`: Runs ESLint checks.
 
----
-
-## 🛡️ License
-
-Private and proprietary. All rights reserved.
